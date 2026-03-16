@@ -1,3 +1,4 @@
+"""."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -6,6 +7,7 @@ from cli.client import BaikePuzzle
 
 
 def is_cjk(char: str) -> bool:
+    """Recognize CJK characters."""
     codepoint = ord(char)
     return (
         0x3400 <= codepoint <= 0x4DBF
@@ -20,11 +22,13 @@ def is_cjk(char: str) -> bool:
 
 
 def _extract_cjk_chars(text: str) -> set[str]:
+    """Get CJK characters."""
     return {char for char in text if is_cjk(char)}
 
 
 @dataclass(slots=True)
 class GuessResult:
+    """Guess result class."""
     accepted_chars: list[str]
     repeated_chars: list[str]
     newly_correct: list[str]
@@ -35,6 +39,7 @@ class GuessResult:
 
 @dataclass(slots=True)
 class BaikeGame:
+    """Class for overall Baike puzzle."""
     puzzle: BaikePuzzle
     guessed_right: set[str] = field(default_factory=set)
     guessed_wrong: set[str] = field(default_factory=set)
@@ -44,25 +49,27 @@ class BaikeGame:
     title_chars: set[str] = field(init=False)
 
     def __post_init__(self) -> None:
+        """Init function."""
         joined = self.puzzle.title
         if self.puzzle.author:
             joined += self.puzzle.author
         for paragraph in self.puzzle.paragraphs:
-            joined += "".join(paragraph)
+            joined += ''.join(paragraph)
         self.all_chars = _extract_cjk_chars(joined)
         self.title_chars = _extract_cjk_chars(self.puzzle.title)
 
     def guess(self, raw_text: str) -> GuessResult:
+        """Guess procedure."""
         chars = _dedupe_guess(raw_text)
         if not chars:
-            raise ValueError("请输入至少一个汉字")
+            raise ValueError('请输入至少一个汉字')
         if len(chars) > 1:
-            raise ValueError("每次最多输入 1 个汉字")
+            raise ValueError('每次最多输入 1 个汉字')
 
         accepted = [char for char in chars if char not in self.guessed_right and char not in self.guessed_wrong]
         repeated = [char for char in chars if char not in accepted]
         if not accepted:
-            raise ValueError("这个字你猜过了")
+            raise ValueError('这个字你猜过了')
 
         newly_correct: list[str] = []
         newly_wrong: list[str] = []
@@ -87,6 +94,7 @@ class BaikeGame:
 
 
 def _dedupe_guess(raw_text: str) -> list[str]:
+    """Get next batch of chars."""
     seen: set[str] = set()
     chars: list[str] = []
     for char in raw_text.strip():
@@ -94,4 +102,5 @@ def _dedupe_guess(raw_text: str) -> list[str]:
             continue
         chars.append(char)
         seen.add(char)
+
     return chars
