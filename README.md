@@ -1,5 +1,7 @@
 # Baike Guesser
 
+![](asset/teaser.png)
+
 ## Question Definition
 
 [Guess Baike (猜百科)](https://xiaoce.fun/baike) is a Chinese langugage based puzzle that requires the user to guess the title of a Baike (Chinese Wikipedia) entry.
@@ -17,14 +19,17 @@ Assumptions:
 
 1. Maximized character-probability
    The posterior probability is calculated with both the known guesses in the title and the text body. On each state with the known title context $C_t$ and body character set $S_b$, for each unguessed character $w$ in the vocabulary, we can obtain a position-sensitive probability $P_s(w|C_t)$ indicating the averaged probabilty of having $w$ in any position of the title with knowing the position and chars $C_t$, and a position-insensitive probability $P_i(w|S_b)$ indicating the probability of having $w$ with knowing the chars $S_b$ in body text.
+
    The two posterior distribution are weighted averaged by $\alpha P_s(w|C_t) + \beta P_i(w|S_b)$, where $\alpha$ and $\beta$ are two configurable weights.
+
    The suggestion is given by the top-1-probability character.
 
 2. [TODO] Maximize domain possibility: try to hit the domain first -> then max prob.
-3. [TODO] Use n-gram info from the text body (chunking with stopwords?).
+3. [TODO] Concreteness info: raise weight for concrete words.
 4. [TODO] When len(title) > 6, dynamically chuck sub-ngrams.
-5. [TODO] To support when title contains number or alphabet
-6. [TODO] Concreteness info: raise weight for concrete words.
+5. [TODO] To support when title contains number or alphabet.
+6. [TODO] Use n-gram info from the text body (chunking with stopwords?).
+
 
 
 ## Interaction
