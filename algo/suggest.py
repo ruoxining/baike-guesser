@@ -32,7 +32,7 @@ class Suggest:
                     if word:
                         self._stopwords.add(word)
         except FileNotFoundError:
-            pass  # If stopwords file doesn't exist, continue without it
+            pass  # if stopwords file doesn't exist, continue without it
 
     def _get_title_prob(self, title, guessed_right):
         """Get character probability distribution from title context.
@@ -53,14 +53,14 @@ class Suggest:
                       if re.match(pattern, word)
                       }
 
-        # Build probability distribution for each position from title
+        # build probability distribution for each position from title
         char_title_prob = defaultdict(lambda: defaultdict(float))
         total_freq_title = sum(freq_ngram.values()) if freq_ngram else 1
 
-        # For each position that is not yet guessed
+        # for each position that is not yet guessed
         for pos in range(len(title)):
             if title[pos] not in guessed_right:
-                # Collect all characters at this position from matching ngrams
+                # collect all characters at this position from matching ngrams
                 # and accumulate their probabilities
                 for word, freq in freq_ngram.items():
                     char = word[pos]
@@ -84,7 +84,7 @@ class Suggest:
         char_count = defaultdict(int)
         total_count = 0
 
-        # Iterate through all ngrams
+        # iterate through all ngrams
         for n in range(2, 7):
             if n not in self._freq:
                 continue
@@ -104,7 +104,7 @@ class Suggest:
                         char_count[char] += freq
                         total_count += freq
 
-        # Normalize to probability distribution
+        # normalize to probability distribution
         total_count = total_count if total_count > 0 else 1
         char_body_prob = {char: count / total_count
                           for char, count in char_count.items()}
@@ -146,7 +146,7 @@ class Suggest:
                     char_posterior[char][0] += posterior
                     char_posterior[char][1] += 1
 
-        # Convert to averaged posteriors
+        # convert to averaged posteriors
         char_posterior = {char: (total / count)
                           for char, (total, count) in char_posterior.items()}
 
