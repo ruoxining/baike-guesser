@@ -21,11 +21,11 @@ The posterior probability is calculated with the known guesses in the title and 
 
 On each state with the known title context $C_t$, body character set $S_b$, and recognized n-grams in body text $C_b$, for each unguessed character $w$ in the vocabulary:
 
-1. Title probability: $P_s(w|C_t)$: position-sensitive probability from title n-grams matching the current title pattern with known characters fixed.
+1. Title probability $P_s(w|C_t)$: position-sensitive probability from title n-grams matching the current title pattern with known characters fixed.
 
-2. Body probability: $P_i(w|S_b)$: position-insensitive probability from all n-grams (2-6 grams) in the corpus that contain all guessed characters and no wrong guesses.
+2. Text body probability $P_i(w|S_b)$: position-insensitive probability from all n-grams (2-6 grams) in the corpus that contain all guessed characters and no wrong guesses.
 
-3. Recognized n-gram probability: $P_r(w|C_b)$: position-sensitive probability from n-grams in body text. The body text is chunked by punctuation marks into phrases (1-6 characters). For each chunk that matches the corpus and contains all guessed characters but no wrong guesses, we extract position-sensitive character probabilities. This probability is only considered when n-grams are actually recognized in the body text.
+3. Recognized text body n-gram probability $P_r(w|C_b)$: position-sensitive probability from n-grams in body text. The body text is chunked by punctuation marks into phrases (1-6 characters). For each chunk that matches the corpus and contains all guessed characters but no wrong guesses, we extract position-sensitive character probabilities. This probability is only considered when n-grams are actually recognized in the body text.
 
 The three posterior distributions are weighted averaged by:
 $$P(w) = \alpha P_s(w|C_t) + \beta P_i(w|S_b) + \gamma P_r(w|C_b)$$
