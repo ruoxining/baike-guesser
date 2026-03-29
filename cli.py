@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import sys
 
+# from algo.suggest import Suggest
 from cli.client import fetch_html, get_baike_puzzle, get_latest_daily_date
 from cli.game import BaikeGame
 from cli.render import render_game
@@ -46,8 +47,12 @@ def main() -> int:
 
     game = BaikeGame(puzzle)
     print(render_game(game))
-    print()
-    print('Input Chinese characters to guess. Type /quit to exit.')
+
+    # TODO: print suggestion of game
+    # suggest = Suggest()
+    # suggest.suggest(game)
+
+    print('Input one Chinese character, letter, or digit to guess. Type /quit to exit.')
 
     while not game.correct:
         try:
@@ -71,6 +76,8 @@ def main() -> int:
             continue
 
         print(render_game(game))
+        # suggest.suggest(game)
+
         if result.newly_wrong:
             print(f"Not in puzzle: {' '.join(result.newly_wrong)}")
         if result.repeated_chars:

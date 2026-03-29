@@ -1,7 +1,7 @@
 """."""
 from __future__ import annotations
 
-from cli.game import BaikeGame, is_cjk
+from cli.game import BaikeGame, is_guessable_char, normalize_guess_char
 
 MASK_CHAR = '■'
 
@@ -32,8 +32,9 @@ def _render_line(text: str, game: BaikeGame) -> str:
     """Render lines of the game."""
     glyphs: list[str] = []
     for char in text:
-        if is_cjk(char):
-            glyphs.append(char if char in game.guessed_right or game.correct else MASK_CHAR)
+        normalized = normalize_guess_char(char)
+        if is_guessable_char(normalized):
+            glyphs.append(char if normalized in game.guessed_right or game.correct else MASK_CHAR)
         else:
             glyphs.append(char)
     return ' '.join(glyphs)

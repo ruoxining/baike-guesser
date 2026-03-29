@@ -1,6 +1,7 @@
 """."""
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass, field
 
 from cli.client import BaikePuzzle
@@ -21,9 +22,30 @@ def is_cjk(char: str) -> bool:
     )
 
 
-def _extract_cjk_chars(text: str) -> set[str]:
-    """Get CJK characters."""
-    return {char for char in text if is_cjk(char)}
+def normalize_guess_char(char: str) -> str:
+    """Normalize a character for comparison and deduping."""
+    normalized = unicodedata.normalize('NFKC', char)
+    if len(normalized) != 1:
+        return char
+    if normalized.isascii() and normalized.isalpha():
+        return normalized.lower()
+    return normalized
+
+
+def is_guessable_char(char: str) -> bool:
+    """Recognize characters that should be guessed by the user."""
+    normalized = normalize_guess_char(char)
+    return is_cjk(normalized) or (normalized.isascii() and normalized.isalnum())
+
+
+def _extract_guessable_chars(text: str) -> set[str]:
+    """Get normalized guessable characters."""
+    chars: set[str] = set()
+    for char in text:
+        normalized = normalize_guess_char(char)
+        if is_guessable_char(normalized):
+            chars.add(normalized)
+    return chars
 
 
 @dataclass(slots=True)
@@ -55,21 +77,21 @@ class BaikeGame:
             joined += self.puzzle.author
         for paragraph in self.puzzle.paragraphs:
             joined += ''.join(paragraph)
-        self.all_chars = _extract_cjk_chars(joined)
-        self.title_chars = _extract_cjk_chars(self.puzzle.title)
+        self.all_chars = _extract_guessable_chars(joined)
+        self.title_chars = _extract_guessable_chars(self.puzzle.title)
 
     def guess(self, raw_text: str) -> GuessResult:
         """Guess procedure."""
         chars = _dedupe_guess(raw_text)
         if not chars:
-            raise ValueError('请输入至少一个汉字')
+            raise ValueError('请输入至少一个汉字、字母或数字')
         if len(chars) > 1:
-            raise ValueError('每次最多输入 1 个汉字')
+            raise ValueError('每次最多输入 1 个汉字、字母或数字')
 
         accepted = [char for char in chars if char not in self.guessed_right and char not in self.guessed_wrong]
         repeated = [char for char in chars if char not in accepted]
         if not accepted:
-            raise ValueError('这个字你猜过了')
+            raise ValueError('这个字符你猜过了')
 
         newly_correct: list[str] = []
         newly_wrong: list[str] = []
@@ -98,9 +120,10 @@ def _dedupe_guess(raw_text: str) -> list[str]:
     seen: set[str] = set()
     chars: list[str] = []
     for char in raw_text.strip():
-        if not is_cjk(char) or char in seen:
+        normalized = normalize_guess_char(char)
+        if not is_guessable_char(normalized) or normalized in seen:
             continue
-        chars.append(char)
-        seen.add(char)
+        chars.append(normalized)
+        seen.add(normalized)
 
     return chars
