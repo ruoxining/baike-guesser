@@ -48,11 +48,8 @@ def main() -> int:
     game = BaikeGame(puzzle)
     print(render_game(game))
 
-    # TODO: print suggestion of game
     suggest = Suggest()
     suggest.suggest(game)
-
-    print('Input one Chinese character, letter, or digit to guess. Type /quit to exit.')
 
     while not game.correct:
         try:

@@ -9,6 +9,7 @@ MASK_CHAR = '■'
 def render_game(game: BaikeGame) -> str:
     """Render game in terminal."""
     lines = [
+        'Input one Chinese character, letter, or digit to guess. Type /quit to exit.',
         f'Date: {game.puzzle.date}',
         f'Guesses: {game.guess_count}',
         f'Found: {_format_sorted(game.guessed_right)}',

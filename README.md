@@ -17,18 +17,29 @@ Assumptions:
 
 ##  Solving strategy(ies)
 
-1. Maximized character-probability
-   The posterior probability is calculated with both the known guesses in the title and the text body. On each state with the known title context $C_t$ and body character set $S_b$, for each unguessed character $w$ in the vocabulary, we can obtain a position-sensitive probability $P_s(w|C_t)$ indicating the averaged probabilty of having $w$ in any position of the title with knowing the position and chars $C_t$, and a position-insensitive probability $P_i(w|S_b)$ indicating the probability of having $w$ with knowing the chars $S_b$ in body text.
+The posterior probability is calculated with the known guesses in the title and the text body.
 
-   The two posterior distribution are weighted averaged by $\alpha P_s(w|C_t) + \beta P_i(w|S_b)$, where $\alpha$ and $\beta$ are two configurable weights. Default $\alpha = 0.8$ and $\beta = 0.2$.
+On each state with the known title context $C_t$, body character set $S_b$, and recognized n-grams in body text $C_b$, for each unguessed character $w$ in the vocabulary:
 
-   The suggestion is given by the top-1-probability character.
+1. Title probability: $P_s(w|C_t)$: position-sensitive probability from title n-grams matching the current title pattern with known characters fixed.
 
-2. [TODO] Maximize domain possibility: try to hit the domain first -> then max prob.
-3. [TODO] Concreteness info: raise weight for concrete words.
-4. [TODO] When len(title) > 6, dynamically chunck sub-ngrams.
-5. [TODO] To support when title contains numbers or alphabets.
-6. [TODO] Use n-gram info from the text body (chunking with punctuation + stopwords).
+2. Body probability: $P_i(w|S_b)$: position-insensitive probability from all n-grams (2-6 grams) in the corpus that contain all guessed characters and no wrong guesses.
+
+3. Recognized n-gram probability: $P_r(w|C_b)$: position-sensitive probability from n-grams in body text. The body text is chunked by punctuation marks into phrases (1-6 characters). For each chunk that matches the corpus and contains all guessed characters but no wrong guesses, we extract position-sensitive character probabilities. This probability is only considered when n-grams are actually recognized in the body text.
+
+The three posterior distributions are weighted averaged by:
+$$P(w) = \alpha P_s(w|C_t) + \beta P_i(w|S_b) + \gamma P_r(w|C_b)$$
+
+where $\alpha$, $\beta$, and $\gamma$ are configurable weights with $\alpha + \beta + \gamma = 1$. When no recognized n-grams hit for a position, the gamma weight is redistributed to alpha and beta proportionally. Default weights: $\alpha = 0.7$, $\beta = 0.2$, $\gamma = 0.1$.
+
+The suggestion is given by the character with the highest posterior probability.
+
+Improvements:
+
+1. [TODO] Maximize domain possibility: try to hit the domain first -> then max prob.
+2. [TODO] Concreteness info: raise weight for concrete words.
+3. [TODO] When len(title) > 6, dynamically chunck sub-ngrams.
+4. [TODO] To support when title contains numbers or alphabets.
 
 
 ## Interaction
