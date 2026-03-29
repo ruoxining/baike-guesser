@@ -4,13 +4,13 @@
 
 ## Question Definition
 
-[Guess Baike (猜百科)](https://xiaoce.fun/baike) is a Chinese langugage based puzzle that requires the user to guess the title of a Baike (Chinese Wikipedia) entry.
+[Guess Baike (猜百科)](https://xiaoce.fun/baike) is a Chinese-language-based puzzle that requires the user to guess the title of a Baike (Chinese Wikipedia) entry.
 
-This solver tries to optimize the guess procedure with the use of Chinese character distribution. To maximize the similarity of the guessing procedures of the algorithm and the human, assumptions are made on the resources achievable by the algorithm.
+This solver tries to optimize the guess procedure with the use of Chinese character distribution. To maximize the similarity of the guessing procedures of the algorithm and the human, assumptions are made about the resources achievable by the algorithm.
 
 Assumptions:
 1. The algorithm can access the natural Chinese language character distribution (mocked with 2012 Google Ngram), from 1-gram up to 6-gram.
-2. The algorithm can know the general domains covered by the Baike, e.g., techonology, news, history, etc..
+2. The algorithm can know the general domains covered by the Baike, e.g., technology, news, history, etc..
 3. The algorithm does not have access to any specific list of keywords under each domain.
 4. The algorithm does not know the selection rule of the daily keyword by the Guess Baike website.
 
@@ -26,23 +26,22 @@ Assumptions:
 
 2. [TODO] Maximize domain possibility: try to hit the domain first -> then max prob.
 3. [TODO] Concreteness info: raise weight for concrete words.
-4. [TODO] When len(title) > 6, dynamically chuck sub-ngrams.
-5. [TODO] To support when title contains number or alphabet.
+4. [TODO] When len(title) > 6, dynamically chunck sub-ngrams.
+5. [TODO] To support when title contains numbers or alphabets.
 6. [TODO] Use n-gram info from the text body (chunking with stopwords?).
-
 
 
 ## Interaction
 
 Interaction with Guess Baike website: This program mocks the request to the website, takes the user input, and update to the website.
 
-Before using the suggestion, the ngram frequency data are required to be downloaded.
+Before using the suggestion, the ngram frequency data should be downloaded, or build other ngrams through the instruction in this HuggingFace repo.
 
 ```bash
 git clone https://huggingface.co/datasets/ruoxining/google-ngram-zh-2012
 ```
 
-Run this command to start interaction
+Run this command to start interaction.
 
 ```bash
 python cli.py
