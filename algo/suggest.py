@@ -19,14 +19,14 @@ class Suggest:
         self._freq = defaultdict()
         ngrams = range(1, 7)
         for n in ngrams:
-            with open(f'corpus/{n}gram.json', 'r', encoding='utf-8') as infile:
+            with open(f'google-ngram-zh-2012/{n}gram.json', 'r', encoding='utf-8') as infile:
                 self._freq[n] = json.loads(infile.read())
 
     def _load_stopwords(self):
         """Load stopwords from file."""
         self._stopwords = set()
         try:
-            with open('corpus/stopwords.txt', 'r', encoding='utf-8') as infile:
+            with open('google-ngram-zh-2012/stopwords.txt', 'r', encoding='utf-8') as infile:
                 for line in infile:
                     word = line.strip()
                     if word:
@@ -160,13 +160,6 @@ class Suggest:
                 subject: bool = False
                 ):
         """Provide suggest according to current solving strategy.
-
-        TODOs:
-            length: when len(title) > 6
-            non-character: when title contains number or alphabet
-            text body info: use ngrams in text body (chunk with stopwords?)
-            domain info: try to hit the domain first -> then max prob
-            concreteness info: raise weight for concrete words.
 
         Args:
             game        : game class.
