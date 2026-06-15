@@ -10,7 +10,8 @@ from urllib.request import Request, urlopen
 
 BASE_URL = 'https://xiaoce.fun'
 DEFAULT_PATH = '/baike'
-USER_AGENT = 'guess-baike/0.1.0 (+https://xiaoce.fun/baike)'
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+_REFERER = 'https://xiaoce.fun/baike'
 
 
 @dataclass(slots=True)
@@ -70,7 +71,7 @@ class _BaikeHTMLParser(HTMLParser):
 
 def _request(url: str) -> str:
     """Request for HTML contents."""
-    request = Request(url, headers={'User-Agent': USER_AGENT})
+    request = Request(url, headers={'User-Agent': USER_AGENT, 'Referer': _REFERER})
     with urlopen(request, timeout=30) as response:
         return response.read().decode('utf-8')
 
@@ -115,8 +116,9 @@ def get_baike_puzzle(
 ) -> BaikePuzzle:
     """Overall procedure to get Baike puzzle."""
     params: dict[str, str] = {}
-    if date:
-        params['date'] = date
+    if not date:
+        date = get_latest_daily_date()
+    params['date'] = date
     if sub_type:
         params['subType'] = sub_type
     if author:
@@ -127,8 +129,12 @@ def get_baike_puzzle(
     if not response.get('success'):
         raise RuntimeError(f'Baike request failed: {response}')
 
-    payload = response['data']
+    payload = response.get('data')
+    if payload is None:
+        raise RuntimeError(f'Baike response has no data: {response}')
     puzzle = payload['data']
+    if puzzle is None:
+        raise RuntimeError(f'Baike puzzle data is null (no puzzle for today?): {payload}')
     paragraphs = _normalize_paragraphs(puzzle['content']['paragraphs'])
     return BaikePuzzle(
         title=puzzle['title'],
