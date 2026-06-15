@@ -19,7 +19,8 @@ Assumptions:
 **1. Download raw ngram shards** (~2 GB compressed for 1–2 gram):
 
 ```bash
-bash scripts/download_ngram_v3.sh
+bash scripts/download_ngram.sh          # 1–2 gram (default)
+bash scripts/download_ngram.sh 3        # also fetch 3-gram (~17 GB extra)
 ```
 
 **2. Build corpus JSON files** from the downloaded shards:
@@ -32,6 +33,12 @@ bash scripts/build_ngram.sh
 
 ```bash
 bash scripts/tag_ngrams.sh
+```
+
+**4. Merge corpora** (combines 2012 and 2020 data into `data/google-ngram-zh/`):
+
+```bash
+bash scripts/merge_ngram.sh
 ```
 
 ## Usage

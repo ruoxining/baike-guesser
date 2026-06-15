@@ -9,7 +9,7 @@ from pathlib import Path
 
 from cli.game import is_guessable_char, normalize_guess_char
 
-_CORPUS_DIR = Path('google-ngram-zh')
+_CORPUS_DIR = Path('data/google-ngram-zh')
 
 # Module-level cache: shared across all algorithm instances in the same process.
 _freq_cache: dict[int, dict[str, float]] = {}

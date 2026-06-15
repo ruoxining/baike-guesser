@@ -1,22 +1,21 @@
-#!/bin/bash
-# Download Google Books Ngram v3 (20200217) — Chinese Simplified.
+#!/usr/bin/env bash
+# Download Google Books Ngram (20200217, Chinese Simplified) raw shards.
 #
-# v3 uses a different URL and file structure from v2:
-#   URL:    http://storage.googleapis.com/books/ngrams/books/20200217/chi_sim/{n}-{shard}-of-{total}.gz
-#   Format: ngram_POS<TAB>year,count,vol<TAB>year,count,vol...   (one line per ngram)
+# URL format: http://storage.googleapis.com/books/ngrams/books/20200217/chi_sim/
+# File format: ngram_POS<TAB>year,count,vol<TAB>...  (one line per ngram)
 #
 # Usage:
-#   bash scripts/download_ngram_v3.sh [max_n]
-#   max_n defaults to 2 (1-gram ~58MB, 2-gram ~2.2GB compressed)
-#   Set max_n=3 to also get 3-gram (~17GB compressed) — takes a long time.
+#   bash scripts/download_ngram.sh [max_n]
+#   max_n defaults to 2 (1-gram ~58 MB, 2-gram ~2.2 GB compressed)
+#   Set max_n=3 to also fetch 3-gram (~17 GB) — takes a long time.
 #
-# Output: google-ngram-zh-2020/raw/{n}gram/*.gz
+# Output: data/google-ngram-zh-2020/raw/{n}gram/*.gz
 
 set -euo pipefail
 
 MAX_N=${1:-2}
 BASE="http://storage.googleapis.com/books/ngrams/books/20200217/chi_sim"
-OUT="google-ngram-zh-2020/raw"
+OUT="data/google-ngram-zh-2020/raw"
 
 mkdir -p "$OUT"
 
@@ -24,7 +23,6 @@ for n in $(seq 1 "$MAX_N"); do
     exports_url="${BASE}/chi_sim-${n}-ngrams_exports.html"
     echo "=== ${n}-gram: fetching shard list from $exports_url ==="
 
-    # Parse shard URLs from the exports page
     shard_urls=$(curl -s "$exports_url" | grep -oP 'href="[^"]*\.gz"' | tr -d 'href="')
     n_shards=$(echo "$shard_urls" | wc -l)
     echo "  $n_shards shard(s) to download"
@@ -48,4 +46,4 @@ for n in $(seq 1 "$MAX_N"); do
 done
 
 echo ""
-echo "All downloads complete. Run: python3 scripts/build_corpus_v3.py"
+echo "All downloads complete. Next: bash scripts/build_ngram.sh"

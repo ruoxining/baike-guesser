@@ -25,9 +25,9 @@ import shutil
 from collections import defaultdict
 from pathlib import Path
 
-RAW_DIR = Path('google-ngram-zh-2020/raw')
-OUT_DIR = Path('google-ngram-zh-2020')
-OLD_CORPUS = Path('google-ngram-zh-2012')
+RAW_DIR = Path('data/google-ngram-zh-2020/raw')
+OUT_DIR = Path('data/google-ngram-zh-2020')
+OLD_CORPUS = Path('data/google-ngram-zh-2012')
 
 _POS_RE = re.compile(r'_([A-Z]+)$')
 _CJK_ONLY = re.compile(r'^[一-鿿]+$')

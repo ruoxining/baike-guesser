@@ -248,7 +248,7 @@ def tag_corpus(corpus_dir: Path) -> None:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--corpus', default='google-ngram-zh',
+    parser.add_argument('--corpus', default='data/google-ngram-zh',
                         help='path to corpus directory containing {n}gram.json files')
     args = parser.parse_args()
     corpus_dir = Path(args.corpus)

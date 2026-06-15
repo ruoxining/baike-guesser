@@ -14,9 +14,9 @@ import json
 import shutil
 from pathlib import Path
 
-V2 = Path('google-ngram-zh-2012')
-V3 = Path('google-ngram-zh-2020')
-OUT = Path('google-ngram-zh')
+V2 = Path('data/google-ngram-zh-2012')
+V3 = Path('data/google-ngram-zh-2020')
+OUT = Path('data/google-ngram-zh')
 
 
 def load(path: Path) -> dict:
