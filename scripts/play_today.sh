@@ -20,9 +20,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-python3 "$DIR/record_puzzle.py" ${DATE:+--date "$DATE"} ${SUB_TYPE:+--sub-type "$SUB_TYPE"}
+python3 "$DIR/cli/record_puzzle.py" ${DATE:+--date "$DATE"} ${SUB_TYPE:+--sub-type "$SUB_TYPE"}
 
 [[ -z $DATE ]] && DATE=$(python3 -c "from cli.client import get_latest_daily_date; print(get_latest_daily_date())")
 FILE="$DIR/puzzles/$DATE${SUB_TYPE:+_$SUB_TYPE}.json"
 
-python3 "$DIR/cli.py" --from-file "$FILE" ${ALGO:+--algo "$ALGO"}
+python3 "$DIR/main.py" --from-file "$FILE" ${ALGO:+--algo "$ALGO"}

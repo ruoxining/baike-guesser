@@ -2,83 +2,66 @@
 
 ![](asset/teaser.png)
 
-## Question Definition
+## What is this
 
-[Guess Baike (猜百科)](https://xiaoce.fun/baike) is a Chinese-language-based puzzle that requires the user to guess the title of a Baike (Chinese Wikipedia) entry.
+[Guess Baike (猜百科)](https://xiaoce.fun/baike) is a Chinese-language puzzle where you guess the title of a Baike (Chinese Wikipedia) entry.
 
-This solver tries to optimize the guess procedure with the use of Chinese character distribution. To maximize the similarity of the guessing procedures of the algorithm and the human, assumptions are made about the resources achievable by the algorithm.
+This solver uses Chinese character distribution to optimise guessing, based on what a fluent reader would know — the Google Ngram corpus — with no access to any Baike article database.
 
 Assumptions:
-1. The algorithm can access the natural Chinese language character distribution (mocked with 2012 Google Ngram), from 1-gram up to 6-gram.
-2. The algorithm can know the general domains covered by the Baike, e.g., technology, news, history, etc..
-3. The algorithm does not have access to any specific list of keywords under each domain.
-4. The algorithm does not know the selection rule of the daily keyword by the Guess Baike website.
-
-
-## Solving Strategy
-
-All algorithms share a common base (`algo/base.py`) that loads the Google Ngram corpus and provides shared utilities: corpus access, regex-cached candidate matching, passage chunking by punctuation, and stopword filtering.
-
-On each state with known title context $C_t$, body character set $S_b$, and recognized n-grams in body text $C_b$, the **baseline** (Algo 0) computes:
-
-1. **Title probability** $P_s(w|C_t)$: position-sensitive probability from title n-grams matching the current title pattern with known characters fixed.
-
-2. **Text body probability** $P_i(w|S_b)$: position-insensitive probability from all n-grams (2–6 grams) containing all guessed-right characters and no guessed-wrong characters.
-
-3. **Recognized body n-gram probability** $P_r(w|C_b)$: position-sensitive probability from body text chunks that match the corpus given current constraints.
-
-$$P(w) = \alpha P_s(w|C_t) + \beta P_i(w|S_b) + \gamma P_r(w|C_b)$$
-
-Default weights: $\alpha = 0.5$, $\beta = 0.4$, $\gamma = 0.1$. Phase logic: before any body hit $\beta = 0$; $\gamma$ activates only when recognized body n-grams are found.
-
-
-## Algorithm Variants
-
-Six algorithms are implemented under `algo/`. All share `BaseSuggest` and expose a unified `suggest(game) -> str | None` interface.
-
-| # | Class | Strategy |
-|---|---|---|
-| 0 | `Suggest` | Baseline weighted combination of title / body / recognized-ngram probabilities |
-| 1 | `EntropyGuess` | Pick the guess that maximises expected Shannon entropy reduction over title candidates |
-| 2 | `FunctionWordBridge` | Phase 1: guess function words to unlock passage ngrams; Phase 2: baseline with boosted $\gamma$ |
-| 3 | `EmbeddingGuess` | Corpus-derived co-occurrence embeddings; semantic similarity to body-confirmed context |
-| 4 | `AdaptiveBayes` | Baseline with game-state-driven $\alpha / \beta / \gamma$ (body evidence, title coverage, ngram density) |
-| 5 | `ConstraintPropagation` | Wordle-style hard constraint pruning; frequency ranking over surviving title candidates |
-
-See [ALGORITHMS.md](ALGORITHMS.md) for detailed mechanics, complexity analysis, and trade-off comparisons.
-
+1. The algorithm can access the natural Chinese character distribution (Google Ngram 2012, 1–6 gram).
+2. The algorithm can infer general article domains (technology, history, geography, …) from the corpus tags.
+3. The algorithm does not have access to any keyword list under any domain.
+4. The algorithm does not know the daily puzzle selection rule.
 
 ## Setup
 
-Download the ngram frequency data:
+**1. Download raw ngram shards** (~2 GB compressed for 1–2 gram):
 
 ```bash
-git clone https://huggingface.co/datasets/ruoxining/google-ngram-zh-2012
+bash scripts/download_ngram_v3.sh
 ```
 
+**2. Build corpus JSON files** from the downloaded shards:
+
+```bash
+bash scripts/build_ngram.sh
+```
+
+**3. Tag ngrams** with domain and entity labels:
+
+```bash
+bash scripts/tag_ngrams.sh
+```
 
 ## Usage
 
-**Interactive solver** — mocks requests to the website, takes user input, and updates state:
+**Play today's puzzle** — fetches, saves, then launches the interactive solver:
 
 ```bash
-python cli.py
+bash scripts/play_today.sh
+bash scripts/play_today.sh --date 20260604
+bash scripts/play_today.sh --sub-type history
+bash scripts/play_today.sh --algo combined
 ```
 
 **Record today's puzzle** — saves to `puzzles/<date>.json` for later benchmarking:
 
 ```bash
-python record_puzzle.py
-python record_puzzle.py --date 20260604      # specific date
+bash scripts/record_today.sh
+bash scripts/record_today.sh --date 20260604
+bash scripts/record_today.sh --sub-type history
 ```
 
-**Benchmark all algorithms** against saved puzzles:
+**Run benchmark** across all puzzles in `puzzles/`:
 
 ```bash
-python benchmark.py                          # all puzzles, all algorithms
-python benchmark.py --algos baseline entropy constraint
-python benchmark.py --puzzle puzzles/20260604.json
-python benchmark.py --max-guesses 60
+bash scripts/benchmark.sh
+bash scripts/benchmark.sh --algos constraint entropy combined
+bash scripts/benchmark.sh --puzzle puzzles/20260615.json
+bash scripts/benchmark.sh --max-guesses 60 --no-save
 ```
 
-Results are printed as a summary table and saved to `benchmark_results.json`.
+## Algorithms
+
+Six solver algorithms are implemented under `algo/`. See [doc/ALGORITHMS.md](doc/ALGORITHMS.md) for strategy details, complexity analysis, and trade-off comparisons.

@@ -6,4 +6,4 @@
 set -euo pipefail
 
 DIR=$(cd "$(dirname "$0")/.." && pwd)
-python3 "$DIR/record_puzzle.py" "$@"
+python3 "$DIR/cli/record_puzzle.py" "$@"
