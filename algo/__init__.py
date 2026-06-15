@@ -1,10 +1,10 @@
 """."""
-from .constraint import ConstraintProp
-from .entropy import EntropyGuess
 from .adaptive import BodyBayes
+from .combined import Combined
+from .constraint import ConstraintProp
 from .embedding import EmbeddingGuess
 from .entity import EntityDomain
-from .combined import Combined
+from .entropy import EntropyGuess
 
 __all__ = [
     'ConstraintProp',   # A — baseline: Wordle-style constraint propagation

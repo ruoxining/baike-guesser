@@ -29,12 +29,12 @@ MAX_GUESSES_DEFAULT = 80
 ALGO_REGISTRY: dict[str, type] = {}
 
 def _register():
-    from algo.constraint import ConstraintProp
-    from algo.entropy import EntropyGuess
     from algo.adaptive import BodyBayes
+    from algo.combined import Combined
+    from algo.constraint import ConstraintProp
     from algo.embedding import EmbeddingGuess
     from algo.entity import EntityDomain
-    from algo.combined import Combined
+    from algo.entropy import EntropyGuess
     ALGO_REGISTRY.update({
         'constraint': ConstraintProp,
         'entropy':    EntropyGuess,
@@ -233,4 +233,3 @@ def main() -> int:
 
 if __name__ == '__main__':
     raise SystemExit(main())
-

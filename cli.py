@@ -5,24 +5,67 @@ import argparse
 import json
 import sys
 
-from algo.constraint import ConstraintProp
-from algo.entropy import EntropyGuess
 from algo.adaptive import BodyBayes
+from algo.combined import Combined
+from algo.constraint import ConstraintProp
 from algo.embedding import EmbeddingGuess
 from algo.entity import EntityDomain
-from algo.combined import Combined
-from cli.client import BaikePuzzle, fetch_html, get_baike_puzzle, get_latest_daily_date
+from algo.entropy import EntropyGuess
+from cli.client import (BaikePuzzle, fetch_html, get_baike_puzzle,
+                        get_latest_daily_date)
 from cli.game import BaikeGame
 from cli.render import render_game
 
 _ALGO_MENU = [
-    ('A', 'ConstraintProp  (baseline: Wordle-style hard constraint propagation)', ConstraintProp),
-    ('B', 'EntropyGuess    (information-theoretic: max entropy reduction)', EntropyGuess),
-    ('C', 'BodyBayes       (function-word unlock + adaptive Bayesian tri-prob)', BodyBayes),
-    ('D', 'EmbeddingGuess  (ngram co-occurrence + domain-aware embeddings)', EmbeddingGuess),
-    ('E', 'EntityDomain    (entity-filtered + domain-boosted candidates)', EntityDomain),
-    ('F', 'Combined        (entity+domain tri-prob + entropy-guided selection)', Combined),
+    ('A', 'ConstraintProp', ConstraintProp),
+    ('B', 'EntropyGuess',   EntropyGuess),
+    ('C', 'BodyBayes',      BodyBayes),
+    ('D', 'EmbeddingGuess', EmbeddingGuess),
+    ('E', 'EntityDomain',   EntityDomain),
+    ('F', 'Combined',       Combined),
 ]
+
+_ALGO_HELP = {
+    'A': (
+        'ConstraintProp (baseline)\n'
+        '  Wordle-style hard constraint propagation. Maintains the set of all corpus\n'
+        '  ngrams consistent with every piece of feedback, then picks the highest-\n'
+        '  frequency character at still-unknown positions. Fastest; clean baseline.'
+    ),
+    'B': (
+        'EntropyGuess\n'
+        '  Information-theoretic search. Picks the character that maximises expected\n'
+        '  Shannon entropy reduction over the title candidate set — trades short-term\n'
+        '  hit probability for faster long-term convergence.'
+    ),
+    'C': (
+        'BodyBayes\n'
+        '  Two-phase body-aware Bayesian approach. Phase 1 guesses function words\n'
+        '  (的/是/在/有/年…) to unlock passage context. Phase 2 combines title-ngram,\n'
+        '  body-ngram, and recognised-body signals with adaptive weights. Best for\n'
+        '  long passages.'
+    ),
+    'D': (
+        'EmbeddingGuess\n'
+        '  Distributional semantic similarity built from ngram co-occurrence. Slow\n'
+        '  init (~seconds). Body chars confirmed so far form a context vector;\n'
+        '  candidates are scored by semantic proximity + domain boost. Good for\n'
+        '  rare proper nouns.'
+    ),
+    'E': (
+        'EntityDomain\n'
+        '  Entity filtering + domain boosting. Restricts title candidates to named-\n'
+        '  entity ngrams and applies a 2.5× boost to those matching the detected\n'
+        '  article domain (geography / history / science…). Highest precision when\n'
+        '  entity coverage is good.'
+    ),
+    'F': (
+        'Combined\n'
+        '  Combines E (entity/domain filter), C (adaptive tri-prob body evidence),\n'
+        '  and B (entropy-guided selection) into one pipeline. Highest expected\n'
+        '  accuracy; roughly the same speed as C on most titles.'
+    ),
+}
 
 _ALGO_BY_NAME = {
     'constraint':     ConstraintProp,
@@ -34,47 +77,46 @@ _ALGO_BY_NAME = {
 }
 
 
-def _read_single_key() -> str:
-    """Read one keypress from stdin without requiring Enter."""
-    try:
-        import tty
-        import termios
-        fd = sys.stdin.fileno()
-        old = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            return sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old)
-            termios.tcflush(fd, termios.TCIFLUSH)
-    except Exception:
-        # stdin is not a real TTY (pipe, IDE, etc.) — fall back to line input
-        line = sys.stdin.readline()
-        return line.strip()[:1] if line.strip() else '\x04'
-
-
 def _select_algorithm():
     """Show algorithm menu and return instantiated algorithm."""
     print('Select algorithm:')
-    for key, desc, _ in _ALGO_MENU:
-        print(f'  [{key}] {desc}')
+    for key, name, _ in _ALGO_MENU:
+        print(f'  [{key}] {name}')
     print('  [Q] Quit')
+    print('  Type ?A–?F for a description of any algorithm.')
     print()
 
     valid = {entry[0].upper(): entry for entry in _ALGO_MENU}
     while True:
-        sys.stdout.write('Press A–F (or Q to quit): ')
-        sys.stdout.flush()
-        ch = _read_single_key().upper()
-        if ch:
-            print(ch)
-        if ch in valid:
-            _, _, cls = valid[ch]
+        try:
+            raw = input('Enter A–F (or Q to quit): ').strip()
+        except (EOFError, KeyboardInterrupt):
+            raise KeyboardInterrupt
+
+        if not raw:
+            continue
+
+        upper = raw.upper()
+
+        if upper.startswith('?'):
+            key = upper[1:].strip()
+            if key in _ALGO_HELP:
+                print()
+                print(_ALGO_HELP[key])
+                print()
+            else:
+                keys = ', '.join(k for k, *_ in _ALGO_MENU)
+                print(f'  No help for "{raw[1:]}". Try ?A through ?F ({keys}).')
+            continue
+
+        key = upper[0] if upper else ''
+        if key in valid:
+            _, _, cls = valid[key]
             print(f'Loading {cls.__name__}...')
             return cls()
-        if ch in {'\x03', '\x04', 'Q', ''}:
+        if key in {'Q', '\x03', '\x04'} or not key:
             raise KeyboardInterrupt
-        # invalid key — loop silently
+        print(f'  Unknown option "{raw}". Enter A–F, ?A–?F for help, or Q to quit.')
 
 
 def main() -> int:

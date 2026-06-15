@@ -24,7 +24,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 
-from algo.adaptive import BodyBayes, FUNCTION_WORDS, _phase1_thresholds
+from algo.adaptive import FUNCTION_WORDS, BodyBayes, _phase1_thresholds
 
 DOMAIN_BOOST = 2.5
 
