@@ -72,3 +72,11 @@ bash scripts/benchmark.sh --max-guesses 60 --no-save
 ## Algorithms
 
 Six solver algorithms are implemented under `algo/`. See [doc/ALGORITHMS.md](doc/ALGORITHMS.md) for strategy details, complexity analysis, and trade-off comparisons.
+
+## Future Optimization
+
+Even the combined algorithm (F) struggles. Two directions for optimization:
+
+**Corpus staleness.** The Google Ngram dataset is anchored to 2012 (with a partial 2020 supplement). Baike entries for recent events, internet slang, emerging technology terms, and contemporary cultural figures accumulate frequencies that simply do not exist in this corpus. The solver has no signal to work from when the puzzle target is a concept born after the data cut-off, so it falls back on generic character distributions that do little to narrow the candidate space.
+
+**Polysemy in domain classification.** The domain tagger assigns each character or n-gram to its statistically dominant sense, but many common characters carry meanings across wildly different fields. A character that overwhelmingly appears in geography contexts in the corpus may be the key component of a technology term in the puzzle answer. When the solver infers domain from these tags, it can commit to the wrong field early and systematically deprioritise the right answer. Addressing this would likely require either a context-sensitive sense disambiguator or a softer domain prior that keeps multiple hypotheses alive longer.
